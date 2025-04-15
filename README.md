@@ -119,7 +119,6 @@
    docker build -t xing_langchain_chat .
    ```
    *   **注意**: 如果需要在容器内使用，请确保 `Dockerfile` 中安装 Tesseract 和 Poppler 的命令有效。
-   *   **快捷启动**：可以直接在Dockers Hub中搜索 `xing_langchain_chat`即可快速启动镜像
 
 **3. 运行容器:**
    ```bash
