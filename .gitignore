@@ -130,7 +130,7 @@ cython_debug/
 
 # VS Code settings
 .vscode/
-
+README.md
 # Editor settings
 .idea/
 *.sublime-*
