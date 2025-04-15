@@ -30,4 +30,4 @@ EXPOSE 8501
 # 使用 --server.enableCORS=false 避免潜在的跨域问题
 # 使用 --server.address=0.0.0.0 允许从外部访问
 # 添加 --server.fileWatcherType=none 禁用文件监控，避免与 PyTorch 冲突
-CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=127.0.0.1", "--server.enableCORS=false", "--server.fileWatcherType=none"] 
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.enableCORS=false", "--server.fileWatcherType=none"] 
