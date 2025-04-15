@@ -1,0 +1,36 @@
+{
+    "model": {
+        "path": "models/resume-xx",
+        "device": "auto",
+        "temperature": 0.7,
+        "max_length": 2048,
+        "top_p": 0.8
+    },
+    "embedding": {
+        "model_name": "BAAI/bge-small-zh-v1.5",
+        "chunk_size": 300,
+        "chunk_overlap": 50
+    },
+    "vector_db": {
+        "path": "data/vector_store"
+    },
+    "weather_api": {
+        "key": "dummy_key",
+        "type": "weather_cn",
+        "timeout": 30,
+        "note": "使用中国天气网数据，支持全国3000+城市和区县的天气查询"
+    },
+    "app": {
+        "title": "本地大模型问答系统",
+        "theme": {
+            "primary_color": "#1E3A8A",
+            "background_color": "#FFFFFF",
+            "accent_color": "#93C5FD"
+        }
+    },
+    "logging": {
+        "level": "INFO",
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        "file": "logs/qa_system.log"
+    }
+} 

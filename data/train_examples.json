@@ -1,0 +1,77 @@
+[
+  {
+    "instruction": "用户想知道北京的天气情况。",
+    "input": "北京今天天气怎么样？",
+    "output": "{\"function\": \"get_weather\", \"data\": {\"location\": \"北京\", \"date\": \"today\"}}"
+  },
+  {
+    "instruction": "用户询问上海明天的天气。",
+    "input": "上海明天会下雨吗？",
+    "output": "{\"function\": \"get_weather\", \"data\": {\"location\": \"上海\", \"date\": \"tomorrow\"}}"
+  },
+  {
+    "instruction": "用户想了解广州的天气预报。",
+    "input": "广州今天的气温是多少？",
+    "output": "{\"function\": \"get_weather\", \"data\": {\"location\": \"广州\", \"date\": \"today\"}}"
+  },
+  {
+    "instruction": "用户询问成都的天气情况。",
+    "input": "成都今天是晴天吗？",
+    "output": "{\"function\": \"get_weather\", \"data\": {\"location\": \"成都\", \"date\": \"today\"}}"
+  },
+  {
+    "instruction": "用户问杭州的明天天气。",
+    "input": "明天杭州的天气情况",
+    "output": "{\"function\": \"get_weather\", \"data\": {\"location\": \"杭州\", \"date\": \"tomorrow\"}}"
+  },
+  {
+    "instruction": "用户想知道深圳的天气。",
+    "input": "深圳今天热不热？",
+    "output": "{\"function\": \"get_weather\", \"data\": {\"location\": \"深圳\", \"date\": \"today\"}}"
+  },
+  {
+    "instruction": "用户询问西安的天气预报。",
+    "input": "西安明天冷不冷啊？",
+    "output": "{\"function\": \"get_weather\", \"data\": {\"location\": \"西安\", \"date\": \"tomorrow\"}}"
+  },
+  {
+    "instruction": "用户在问重庆的天气。",
+    "input": "重庆今天什么天气？",
+    "output": "{\"function\": \"get_weather\", \"data\": {\"location\": \"重庆\", \"date\": \"today\"}}"
+  },
+  {
+    "instruction": "用户想了解武汉明天的天气。",
+    "input": "武汉明天天气如何？",
+    "output": "{\"function\": \"get_weather\", \"data\": {\"location\": \"武汉\", \"date\": \"tomorrow\"}}"
+  },
+  {
+    "instruction": "用户询问南京的天气状况。",
+    "input": "南京今天会不会下雨？",
+    "output": "{\"function\": \"get_weather\", \"data\": {\"location\": \"南京\", \"date\": \"today\"}}"
+  },
+  {
+    "instruction": "用户想知道北京的气温。",
+    "input": "北京今天多少度？",
+    "output": "{\"function\": \"get_weather\", \"data\": {\"location\": \"北京\", \"date\": \"today\"}}"
+  },
+  {
+    "instruction": "用户询问普通问题，无需调用任何函数。",
+    "input": "你好，请问你是谁？",
+    "output": "你好！我是一个基于Qwen2.5-0.5B-Instruct的AI助手，可以回答问题、提供天气查询等服务。有什么我可以帮助你的吗？"
+  },
+  {
+    "instruction": "用户询问普通问题，无需调用任何函数。",
+    "input": "人工智能的发展前景如何？",
+    "output": "人工智能的发展前景非常广阔。随着算法、计算能力和数据规模的提升，AI正在各行各业发挥越来越重要的作用，如自动驾驶、医疗诊断、智能助手等。未来AI将继续深度融入人类社会，创造新的生产力和生活方式，但也需要关注伦理、隐私和安全等挑战。"
+  },
+  {
+    "instruction": "用户询问普通问题，无需调用任何函数。",
+    "input": "Python和Java有什么区别？",
+    "output": "Python和Java的主要区别包括：1) Python是解释型语言，Java是编译型语言；2) Python使用动态类型，Java使用静态类型；3) Python语法简洁，注重可读性，Java语法较严格；4) Python适合快速开发、数据分析和AI，Java常用于企业级应用、Android开发；5) Python的GIL限制了多线程性能，Java的多线程支持更好。选择哪种语言取决于具体项目需求和个人偏好。"
+  },
+  {
+    "instruction": "用户询问普通问题，无需调用任何函数。",
+    "input": "最近有什么好看的电影推荐？",
+    "output": "作为AI助手，我无法获取最新的电影信息，因为我的知识有时效性限制。不过，我可以建议您查看一些知名电影评分网站如豆瓣、IMDb获取最新推荐，或者根据您喜欢的类型（如科幻、喜剧、动作等）来定制化推荐。您喜欢哪种类型的电影呢？"
+  }
+] 

@@ -1,0 +1,40 @@
+# Git files
+.git/
+.gitignore
+
+# Python virtual environment
+.venv/
+venv/
+env/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE settings
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Streamlit config (if local user specific)
+# .streamlit/config.toml
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# Large data or model files (if they should not be in the image)
+# models/* # Consider if models should be downloaded/mounted instead
+# data/vector_store/* # Consider if the vector store should be built/mounted
+
+# Secrets / API keys (should be passed via env vars or secrets management)
+# config.json # Consider mounting or using environment variables 
