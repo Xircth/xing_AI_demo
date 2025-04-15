@@ -1,271 +1,196 @@
-# 本地大模型问答系统
+# ✨ 兴之助 - 本地大模型问答系统
 
-基于轻量级大模型的本地化问答系统，支持天气查询、简历知识库问答等功能。
+[![GitHub Repo stars](https://img.shields.io/github/stars/Xircth/weather_QA_system?style=social)](https://github.com/Xircth/weather_QA_system)
 
-## 功能特性
+一个基于轻量级大模型（Qwen2.5-0.5B-Instruct）和 RAG (Retrieval-Augmented Generation) 技术构建的本地化智能问答系统。旨在探索和实践本地部署 LLM、结合外部知识库（如个人简历）和工具（如天气查询）的应用。
 
-- 🚀 基于Qwen2.5-0.5B-Instruct轻量级模型，支持本地GPU(包括AMD)推理
-- 🔧 集成天气查询等函数调用功能
-- 📚 支持简历知识库问答（RAG）
-- 💬 多会话管理，支持会话历史保存和切换
-- �� Streamlit现代化Web界面
-- 📄 支持上传TXT、PDF、DOCX格式的简历文件
+**项目仓库地址:** [https://github.com/Xircth/weather_QA_system.git](https://github.com/Xircth/weather_QA_system.git)
 
-## 系统架构
+---
 
-该系统采用模块化三层架构设计：
+## 🚀 主要功能
+
+*   **🤖 本地 LLM 推理**: 使用轻量级 Qwen2.5-0.5B 模型，支持本地 CPU/GPU (包括 AMD ROCm) 进行推理。
+*   **📚 简历 RAG 问答**: 支持上传个人简历（TXT, PDF, DOCX, 图片），构建向量知识库，并针对简历内容进行智能问答。
+*   **☀️ 天气查询工具**: 集成天气查询功能，可通过自然语言查询指定城市和日期的天气。
+*   **💬 多功能对话**: 支持通用知识问答、**固定问答**匹配（基于`fixed_qa.json`）以及上述 RAG 和工具调用。
+*   **🖥️ 现代 Web 界面**: 使用 Streamlit 构建，提供简洁易用的多页面交互界面。
+*   **📄 文件处理**: 集成 OCR 功能（依赖 Tesseract），可处理 PDF 和图片格式的简历。
+*   **🐳 Docker 支持**: 提供 Dockerfile，方便快速部署和环境隔离。
+
+---
+
+## 🛠️ 技术栈
+
+*   **核心框架**: Streamlit, Langchain (Core, Community)
+*   **LLM 与推理**: Transformers, Accelerate, PyTorch, PEFT (用于微调脚本)
+*   **向量数据库与检索**: FAISS (CPU), Langchain HuggingFace Embeddings (BAAI/bge-small-zh-v1.5)
+*   **工具与数据处理**: Requests, BeautifulSoup4, Pillow, python-docx, docx2txt, pdfplumber, pytesseract, pdf2image
+*   **部署**: Docker
+
+---
+
+## 🏗️ 系统架构
+
+系统采用模块化设计，主要组件协同工作：
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │                 │    │                 │    │                 │
-│  Streamlit UI   │───▶│ Langchain Agent │───▶│   LLM Service   │
+│  Streamlit UI   │───▶│   QA System     │───▶│ Middleware      │
+│ (app.py, pages/)│    │ (qa_system.py)  │    │ (middleware.py) │
 │                 │    │                 │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
-                               │                      │
-                               ▼                      ▼
-                        ┌─────────────┐      ┌─────────────────┐
-                        │   Tools     │      │  Vector Store   │
-                        │ (Functions) │      │  (Resume RAG)   │
-                        └─────────────┘      └─────────────────┘
+                             │         \      /
+                             │          `----´
+                             │            │
+                             ▼            ▼
+                     ┌─────────────┐┌─────────────┐┌─────────────────┐
+                     │ LLM Service ││ RAG Module  ││     Tools       │
+                     │(llm_service)││(resume_rag) ││   (tools.py)    │
+                     └─────────────┘└─────────────┘└─────────────────┘
 ```
 
-## 安装方法
+*   **Streamlit UI (`app.py`, `pages/`)**: 用户交互界面，负责展示对话、接收输入、文件上传等。通过 `session_state` 管理会话。
+*   **QA System (`qa_system.py`)**: **核心控制器** (单例)。接收前端请求，初始化并管理其他后端模块。它负责处理查询的主流程：优先进行 RAG 检索（如果开启），然后检查是否匹配**固定问答** (`fixed_qa.json`)，最后调用 **Middleware** 进行进一步处理。同时管理简历上传和知识库构建流程。
+*   **Middleware (`middleware.py`)**: **业务逻辑处理层**。接收来自 QA System 的查询（可能包含 RAG 上下文或无上下文）。如果带有 RAG 上下文，直接调用 **LLM Service** 生成基于上下文的回复。否则，调用 **LLM Service** 判断查询意图（通用、天气、需 RAG），并协调调用 **Tools** (天气查询) 或将结果/状态返回给 QA System。
+*   **LLM Service (`llm_service.py`)**: 封装**大模型**的加载（使用 `device_map='auto'`）和推理。提供 `generate_response` 接口，能根据不同 `prompt_type` (通用、RAG、天气提示) 格式化 Prompt 并获取模型输出。
+*   **RAG Module (`resume_rag.py`)**: 负责**简历知识库**的构建、加载 (FAISS) 和检索。包含文本和图片 (OCR) 的处理逻辑，以及文本分割和向量化。
+*   **Tools (`tools.py`)**: 实现具体的**外部功能**，目前主要是 `get_weather` 工具，支持多种天气 API。
+*   **Utils (`utils.py`, `config.json`)**: 提供**配置管理** (`Config` 类) 和 **日志设置** (`setup_logger`) 等公共服务。
+*   **Models (`models.py`)**: 包含**模型微调**相关的类 (`ModelFineTuner`)，主要由 `scripts/finetune.py` 使用。
 
-### 环境要求
+---
 
-- Python 3.8+
-- GPU: AMD显卡 (启用ROCm)或英伟达显卡 (CUDA)
-- RAM: 至少8GB
+## 🚀 部署与运行
 
-### 依赖安装
+### 方式一：本地运行
 
-```bash
-# 克隆仓库
-git clone https://github.com/yourusername/weather_QA_system.git
-cd weather_QA_system
+**1. 环境要求:**
+   - Python 3.8+
+   - Git
+   - (可选) 支持 ROCm 的 AMD GPU 或 支持 CUDA 的 Nvidia GPU
+   - (可选, 若需处理PDF/图片简历) Tesseract OCR 和 Poppler
 
-# 安装依赖
-pip install -r requirements.txt
+**2. 安装步骤:**
+   ```bash
+   # 克隆仓库
+   git clone https://github.com/Xircth/weather_QA_system.git
+   cd weather_QA_system
 
-# OCR支持（处理PDF和图片简历）
-# Windows系统
-# 1. 下载并安装Tesseract: https://github.com/UB-Mannheim/tesseract/wiki
-# 2. 将安装路径添加到环境变量，例如：D:\OCR\tesseract.exe所在目录
-# 3. 安装poppler (PDF处理所需): https://github.com/oschwartz10612/poppler-windows/releases
-# 4. 将poppler的bin目录添加到环境变量
+   # (推荐) 创建并激活虚拟环境
+   # python -m venv .venv
+   # source .venv/bin/activate  # Linux/macOS
+   # .\.venv\Scripts\activate  # Windows
 
-# Linux系统
-# apt-get install tesseract-ocr libtesseract-dev tesseract-ocr-chi-sim poppler-utils
-```
-
-### 启动系统
-
-为避免模块导入和文件监控问题，建议创建run.py文件：
-
-```python
-import os, sys
-
-if __name__ == "__main__":
-    # 添加项目目录到Python路径
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-    # 禁用文件监控，避免与PyTorch冲突
-    os.environ["STREAMLIT_SERVER_FILE_WATCHER_TYPE"] = "none"
-    # 启动应用
-    os.system(f"{sys.executable} -m streamlit run src/app.py")
-```
-
-然后使用以下命令启动：
-
-```bash
-python run.py
-```
-
-系统会自动打开浏览器窗口，访问 http://localhost:8501
-
-## 使用方法
-
-### 模式切换
-
-- **普通问答模式**: 直接与模型对话，支持天气查询等功能
-- **简历问答模式**: 先上传简历文本，然后可以针对简历内容提问
-
-### 简历知识库构建
-
-1. 在侧边栏选择"简历问答"模式
-2. 上传简历文件（支持.txt/.pdf/.docx格式）
-   - TXT文件直接读取文本
-   - PDF文件会通过OCR提取文本（需要安装Tesseract和pdf2image）
-   - DOCX文件会提取文本内容
-3. 可选择上传简历图片(系统会通过OCR提取图片中的文本)
-4. 点击"处理简历"按钮构建知识库
-5. 构建完成后即可对简历内容进行提问
-
-### 天气查询示例
-
-直接提问城市天气即可，例如：
-- "北京今天天气怎么样？"
-- "明天上海的天气如何？"
-- "成都今天的气温是多少？"
-
-#### 天气API配置
-
-系统已集成心知天气API(Seniverse)并默认启用，同时支持和风天气API，是中国专业的天气数据服务商，支持全国3000+城市和区县的天气查询。默认使用模拟数据，如需获取真实天气数据，请：
-
-1. 前往[心知天气开发平台](https://www.seniverse.com/)或[和风天气开发平台](https://dev.qweather.com/)注册免费账号
-2. 创建应用并获取API密钥(免费版支持每天一定次数调用)
-3. 修改`config.json`文件中的`weather_api`部分：
-   ```json
-   "weather_api": {
-     "key": "你的公钥",
-     "private_key": "你的私钥",
-     "type": "seniverse",  # 心知天气API，或使用"qweather"切换为和风天气
-     "timeout": 10
-   }
+   # 安装依赖
+   pip install -r requirements.txt
    ```
-4. 重启系统即可使用真实天气数据
 
-> 注意：系统同时支持WeatherAPI.com国际版，只需将type设置为"weatherapi"即可切换。
+**3. (可选) 安装 OCR 依赖:**
+   - **Windows**: 
+     - 安装 Tesseract: [UB-Mannheim/tesseract/wiki](https://github.com/UB-Mannheim/tesseract/wiki)
+     - 安装 Poppler: [oschwartz10612/poppler-windows/releases](https://github.com/oschwartz10612/poppler-windows/releases)
+     - 将 Tesseract 和 Poppler 的 `bin` 目录添加到系统环境变量 `PATH`。
+   - **Linux (Debian/Ubuntu)**:
+     ```bash
+     sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-chi-sim poppler-utils libtesseract-dev
+     ```
 
-## 配置文件说明
+**4. 运行应用:**
+   ```bash
+   streamlit run app.py
+   ```
+   系统会自动在浏览器中打开 `http://localhost:8501`。
 
-配置文件位于`config.json`，可根据需要修改：
+### 方式二：Docker 部署
 
-- `model`: 模型配置（路径、推理参数等）
-- `embedding`: 嵌入模型配置
-- `vector_db`: 向量数据库配置
-- `weather_api`: 天气API配置
-- `app`: 应用界面配置
-- `logging`: 日志配置
+**1. 环境要求:**
+   - Docker Desktop 或 Docker Engine 已安装并运行。
 
-## 目录结构
+**2. 构建镜像:**
+   ```bash
+   # 在项目根目录下执行
+   docker build -t xing_langchain_chat .
+   ```
+   *   **注意**: 如果需要在容器内使用，请确保 `Dockerfile` 中安装 Tesseract 和 Poppler 的命令有效。
+   *   **快捷启动**：可以直接在Dockers Hub中搜索 `xing_langchain_chat`即可快速启动镜像
 
-```
-weather_QA_system/
-├── config.json        # 配置文件
-├── main.py            # 程序入口
-├── run.py             # 推荐的启动脚本
-├── requirements.txt   # 依赖列表
-├── README.md          # 说明文档
-├── data/              # 数据目录
-│   └── vector_store/  # 向量数据库存储
-├── logs/              # 日志目录
-└── src/               # 源代码
-    ├── __init__.py    # 包初始化
-    ├── app.py         # Streamlit应用
-    ├── llm_service.py # LLM服务
-    ├── middleware.py  # Langchain中间件
-    ├── qa_system.py   # 问答系统主控
-    ├── resume_rag.py  # 简历RAG模块
-    ├── tools.py       # 工具函数
-    └── utils.py       # 工具类
-```
+**3. 运行容器:**
+   ```bash
+   docker run -p 8501:8501 xing_langchain_chat
+   ```
+   访问 `http://localhost:8501`。
 
-## 辅助脚本
+**4. (可选) 数据持久化与配置挂载:**
+   ```bash
+   # 持久化日志和向量数据库
+   docker volume create weather_qa_logs
+   docker volume create weather_qa_vector_store
+   docker run -p 8501:8501 \
+     -v weather_qa_logs:/app/logs \
+     -v weather_qa_vector_store:/app/data/vector_store \
+     xing_langchain_chat
 
-项目中包含一些用于模型微调和知识库构建的辅助脚本，位于 `scripts` 目录下。
+   # 挂载本地配置文件 (方便修改)
+   # 确保本地存在 config.json
+   docker run -p 8501:8501 -v ./config.json:/app/config.json xing_langchain_chat
+   ```
 
-### 简历知识库构建脚本
+---
 
-此脚本用于根据 `data/文本简历/RAG.md` 文件构建或更新简历的向量知识库。
+## 📖 使用说明
+
+1.  **选择模式**: 在侧边栏选择 **普通问答** 或 **简历问答** 模式。
+2.  **简历问答**: 
+    *   在 **简历问答** 页面上传简历文件（TXT, PDF, DOCX）或图片。
+    *   点击"处理简历"按钮，等待知识库构建完成。
+    *   在下方的聊天框中针对简历内容提问。
+3.  **普通问答**: 
+    *   直接在聊天框中输入您的问题。
+    *   支持通用知识问答和天气查询（例如："成都明天天气怎么样？"）。
+
+---
+
+## ⚙️ 配置说明
+
+主要配置文件为 `config.json`，可调整以下内容：
+
+*   `model`: 大模型路径、推理设备偏好、生成参数等。
+*   `embedding`: 嵌入模型名称、设备、分块设置等。
+*   `vector_db`: 向量数据库存储路径。
+*   `weather_api`: 天气查询 API 配置（支持心知天气、和风天气、WeatherAPI.com，默认使用模拟数据）。请参考注释或 `tools.py` 配置真实的 API Key 以获取实时天气。
+*   `app`: 应用界面相关配置（如标题）。
+*   `logging`: 日志级别和文件路径。
+
+---
+
+## 🧰 辅助脚本
+
+`scripts/` 目录下包含用于模型微调和知识库构建的辅助脚本：
+
+*   **`build_resume_kb.py`**: 手动构建简历知识库（基于 `data/文本简历/RAG.md`）。
+*   **`finetune.py`**: 使用 LoRA 对基础模型进行微调（需要准备训练数据）。
 
 ```bash
+# 手动构建知识库
 python scripts/build_resume_kb.py
+
+# 运行微调 (示例)
+python scripts/finetune.py --data your_dataset.json --output models/my_finetuned_model --tag my_tag
 ```
 
-### 模型微调脚本
+---
 
-此脚本用于使用指定数据集（默认为 `resume_dataset.json`）对基础模型进行LoRA微调。
+## 🤔 常见问题
 
-```bash
-# 默认参数运行
-python scripts/finetune.py
+1.  **PDF/DOCX/图片处理失败**: 确保 OCR 依赖已正确安装并配置环境变量（参考本地部署步骤）。
+2.  **模块导入错误**: 尝试使用 `streamlit run app.py` 启动，或确保虚拟环境已激活且依赖安装正确。
+3.  **CUDA/ROCm 错误**: 检查驱动是否正确安装，或在 `config.json` 中将 `model.device` 设置为 `"cpu"`。
+4.  **固定问答不生效**: 检查 `src/fixed_qa.json` 文件是否存在且格式正确。
 
-# 指定数据集和输出目录
-python scripts/finetune.py --data path/to/your_data.json --output path/to/save/model --tag your_model_tag
-```
+---
 
-请根据需要调整脚本内的参数或通过命令行参数覆盖。
+## 📄 许可证
 
-## 常见问题解决
-
-1. **PDF/DOCX处理失败**
-   - 确保已安装所有依赖：`pip install pdf2image pytesseract docx2txt`
-   - Windows系统需要安装Tesseract和Poppler，并添加到环境变量
-   - Linux系统需要安装相应的系统包
-
-2. **模块导入错误**
-   - 使用提供的run.py脚本启动，避免路径问题
-
-3. **CUDA/ROCm错误**
-   - 在config.json中将"device"设置为"cpu"可以强制使用CPU推理
-
-4. **中文文件编码问题**
-   - 系统会自动尝试多种编码方式，但建议保存为UTF-8格式
-
-5. **模型输出格式不规范问题**
-   - 系统已优化模型输出处理逻辑，解决了模型输出中可能带有原始标记或JSON格式信息的问题
-   - 如果仍遇到输出格式异常，可尝试调整`src/llm_service.py`中的解析逻辑或联系维护者
-
-## 开发者说明
-
-- 代码采用极致码高尔夫风格，追求最小行数实现功能
-- 所有变量由统一配置文件管理，避免重复定义
-- 所有注释位于代码右侧，控制在一行内
-- 系统对中文高度友好
-
-## 许可证
-
-MIT 
-
-## Docker 支持
-
-项目提供了 Dockerfile，方便您通过 Docker 容器运行本应用。
-
-### 构建 Docker 镜像
-
-在项目根目录下执行以下命令构建镜像：
-
-```bash
-# 将 weather_qa_system 替换为您想要的镜像名称
-docker build -t weather_qa_system .
-```
-
-**注意:** 
-- 如果您的应用需要使用简历上传功能中的 OCR（例如处理 PDF 文件），请确保在构建镜像前取消 `Dockerfile` 中安装 Tesseract 和 Poppler 的相关命令的注释。
-- 基础镜像 `python:3.9-slim` 是基于 Debian 的。如果您在其他环境（如 Alpine）或需要不同版本的 Python，请相应修改 `Dockerfile`。
-
-### 运行 Docker 容器
-
-使用以下命令运行容器：
-
-```bash
-# 将本地 8501 端口映射到容器的 8501 端口
-docker run -p 8501:8501 weather_qa_system
-```
-
-容器启动后，您可以通过浏览器访问 `http://localhost:8501` 来使用应用。
-
-### 数据持久化 (可选)
-
-如果您希望持久化存储日志或向量数据库，可以使用 Docker 数据卷：
-
-```bash
-# 创建数据卷 (如果尚未创建)
-docker volume create weather_qa_logs
-docker volume create weather_qa_vector_store
-
-# 运行容器并挂载数据卷
-docker run -p 8501:8501 \
-  -v weather_qa_logs:/app/logs \
-  -v weather_qa_vector_store:/app/data/vector_store \
-  weather_qa_system
-```
-
-如果您希望将 `config.json` 文件挂载到容器中以方便修改，可以使用绑定挂载：
-
-```bash
-docker run -p 8501:8501 \
-  -v ./config.json:/app/config.json \
-  weather_qa_system
-```
-请确保本地存在 `config.json` 文件。 
+本项目采用 [MIT](LICENSE) 许可证。 
