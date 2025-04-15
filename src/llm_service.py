@@ -1,7 +1,6 @@
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from src.utils import Config, setup_logger
-# from src.tools import WeatherTool # tools 可能在 middleware 中使用，此处不再直接需要
 from datetime import datetime
 from typing import Optional, Dict, List, Tuple, Any # 增加类型提示
 
@@ -136,7 +135,10 @@ class LLMService:
                 outputs = self.model.generate(**inputs, **gen_kwargs)
             response_ids = outputs[0][inputs.input_ids.shape[1]:]
             response = self.tokenizer.decode(response_ids, skip_special_tokens=True)
+            # Clean up special tokens and potential trailing "riott"
             response = response.replace("<|endoftext|>", "").replace(self.IM_END, "").strip()
+            if response.lower().endswith("riott"):
+                response = response[:-5].rstrip() # Remove "riott" and any trailing whitespace before it
             return response
         except Exception as e:
             self.logger.error(f"生成回复失败: {e}", exc_info=True)
