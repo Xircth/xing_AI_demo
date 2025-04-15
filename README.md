@@ -19,7 +19,6 @@
 *   **🐳 Docker 支持**: 提供 Dockerfile，方便快速部署和环境隔离。
 
 ---
-
 ## 🛠️ 技术栈
 
 *   **核心框架**: Streamlit, Langchain (Core, Community)
@@ -61,9 +60,12 @@
 *   **Models (`models.py`)**: 包含**模型微调**相关的类 (`ModelFineTuner`)，主要由 `scripts/finetune.py` 使用。
 
 ---
+##页面图例：
 
 ![image](https://github.com/user-attachments/assets/f98dba0f-6b84-4940-b4b9-6eda278a8d52)
-
+![image](https://github.com/user-attachments/assets/4416dde7-3a14-491b-b2c4-364bde0818fa)
+![image](https://github.com/user-attachments/assets/ed20229b-c3ec-4036-ac71-42f9252da5aa)
+以上图例仅供参考
 
 ## 🚀 部署与运行
 
