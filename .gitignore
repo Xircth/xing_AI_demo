@@ -160,3 +160,4 @@ logs/
 
 # Streamlit secrets (if used)
 .streamlit/secrets.toml
+.vercel
