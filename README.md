@@ -1,10 +1,6 @@
 # ✨ 兴之助 - 本地大模型问答系统
 
-[![GitHub Repo stars](https://img.shields.io/github/stars/Xircth/weather_QA_system?style=social)](https://github.com/Xircth/weather_QA_system)
-
-一个基于轻量级大模型（Qwen2.5-0.5B-Instruct）和 RAG (Retrieval-Augmented Generation) 技术构建的本地化智能问答系统。旨在探索和实践本地部署 LLM、结合外部知识库（如个人简历）和工具（如天气查询）的应用。
-
-**项目仓库地址:** [https://github.com/Xircth/weather_QA_system.git](https://github.com/Xircth/weather_QA_system.git)
+一个基于轻量级微调大模型（Qwen2.5-0.5B-Instruct）和 RAG (Retrieval-Augmented Generation) 技术构建的本地化智能问答系统。旨在探索和实践本地部署 LLM、结合外部知识库（如个人简历）和工具（如天气查询）的应用。
 
 ---
 
